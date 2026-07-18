@@ -623,6 +623,8 @@ public class CAItems {
 	public static final RegistryObject<Item> MOIST_ENDER_CRYSTAL_SPAWN_EGG = REGISTRY.register("moist_ender_crystal_spawn_egg", () -> new ForgeSpawnEggItem(CAEntities.MOIST_ENDER_CRYSTAL, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> ENDERINA_SPAWNER = tooltipItem("enderina_spawner",
 			() -> new ForgeSpawnEggItem(CAEntities.OCEANIZED_ENDERINA, -1, -1, new Item.Properties().stacksTo(64).rarity(Rarity.EPIC)),1);
+	public static final RegistryObject<Item> OCEANIZED_ENDER_DRAGON_SPAWNER = REGISTRY.register("oceanized_ender_dragon_spawner",
+			() -> new ForgeSpawnEggItem(CAEntities.OCEANIZED_ENDER_DRAGON, -1, -1, new Item.Properties().stacksTo(64).rarity(Rarity.EPIC)));
 	public static final RegistryObject<Item> DRAGON_BRAND = block(CABlocks.DRAGON_BRAND);
 	public static final RegistryObject<Item> MOIST_CRYSTAL_ITEM = REGISTRY.register("moist_crystal_item", () -> new MoistCrystalItemItem());
 	public static final RegistryObject<Item> ENDERINA_CORE = block(CABlocks.ENDERINA_CORE);

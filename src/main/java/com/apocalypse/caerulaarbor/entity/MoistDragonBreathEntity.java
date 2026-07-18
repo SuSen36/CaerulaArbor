@@ -4,6 +4,8 @@ import com.apocalypse.caerulaarbor.CaerulaArborMod;
 import com.apocalypse.caerulaarbor.api.event.SanityEvent;
 import com.apocalypse.caerulaarbor.capability.sanity.SIHelper;
 import com.apocalypse.caerulaarbor.entity.base.SyncedAnimationEntity;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderDragonEntity;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderinaEntity;
 import com.apocalypse.caerulaarbor.init.CADamageTypes;
 import com.apocalypse.caerulaarbor.init.CAEntities;
 import com.apocalypse.caerulaarbor.init.CAParticles;
@@ -274,7 +276,6 @@ public class MoistDragonBreathEntity extends PathfinderMob implements GeoEntity,
         this.setNoGravity(true);
     }
 
-
     public static AttributeSupplier.Builder createAttributes() {
         AttributeSupplier.Builder builder = Mob.createMobAttributes();
         builder = builder.add(Attributes.MOVEMENT_SPEED, 0.3);
@@ -466,7 +467,7 @@ public class MoistDragonBreathEntity extends PathfinderMob implements GeoEntity,
                     } else {
                         Entity recentVictim;
                         Entity recentAttacker;
-                        if (owner instanceof OceanizedEnderinaEntity) {
+                        if (owner instanceof OceanizedEnderinaEntity || owner instanceof OceanizedEnderDragonEntity) {
                             if (entityiterator.getType().is(TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(CaerulaArborMod.MODID, "oceanoffspring")))) {
                                 if (!(entityiterator == target)) {
                                     result = false;

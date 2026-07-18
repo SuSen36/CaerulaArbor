@@ -75,11 +75,11 @@ public abstract class AbstractOceanizedWardenEntity extends SeaMonster {
 		this.setPersistenceRequired();
 	}
 
-        protected abstract SoundEvent getAmbientSoundEvent();
+	protected abstract SoundEvent getAmbientSoundEvent();
 
-        protected abstract SoundEvent getHurtSoundEvent();
+	protected abstract SoundEvent getHurtSoundEvent();
 
-        protected abstract SoundEvent getDeathSoundEvent();
+	protected abstract SoundEvent getDeathSoundEvent();
 
 	protected abstract String getAnimationPrefix();
 

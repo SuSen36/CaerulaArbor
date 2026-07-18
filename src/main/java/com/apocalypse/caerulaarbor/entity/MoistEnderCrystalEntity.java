@@ -4,6 +4,7 @@ import com.apocalypse.caerulaarbor.CaerulaArborMod;
 import com.apocalypse.caerulaarbor.capability.ModCapabilities;
 import com.apocalypse.caerulaarbor.capability.sanity.SanityInjuryCapability;
 import com.apocalypse.caerulaarbor.entity.base.SyncedAnimationEntity;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderinaEntity;
 import com.apocalypse.caerulaarbor.init.*;
 import com.apocalypse.caerulaarbor.util.EntityUtils;
 import net.minecraft.core.BlockPos;
@@ -55,11 +56,16 @@ import java.util.Comparator;
 import java.util.List;
 
 public class MoistEnderCrystalEntity extends PathfinderMob implements GeoEntity, SyncedAnimationEntity {
+	private static final double RETARGET_DISTANCE_SQR = 4.0D;
+	private static final int RETARGET_INTERVAL = 60;
 	public static final EntityDataAccessor<Boolean> DATA_SHOOT = SynchedEntityData.defineId(MoistEnderCrystalEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final EntityDataAccessor<String> DATA_ANIMATION = SynchedEntityData.defineId(MoistEnderCrystalEntity.class, EntityDataSerializers.STRING);
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 	public String animationprocedure = "empty";
 	public boolean IS_STATIC = false;
+	@Nullable
+	private Vec3 lastNavigationTarget;
+	private int lastNavigationTick;
 
 	public MoistEnderCrystalEntity(Level world) {
 		this(CAEntities.MOIST_ENDER_CRYSTAL.get(), world);
@@ -212,6 +218,18 @@ public class MoistEnderCrystalEntity extends PathfinderMob implements GeoEntity,
 		builder = builder.add(Attributes.KNOCKBACK_RESISTANCE, 10);
 		builder = builder.add(Attributes.FLYING_SPEED, 0.45);
 		return builder;
+	}
+
+	public void requestMoveTo(Vec3 target, double speedModifier) {
+		if (this.lastNavigationTarget != null
+				&& this.lastNavigationTarget.distanceToSqr(target) < RETARGET_DISTANCE_SQR
+				&& this.tickCount - this.lastNavigationTick < RETARGET_INTERVAL
+				&& !this.getNavigation().isDone()) {
+			return;
+		}
+		this.lastNavigationTarget = target;
+		this.lastNavigationTick = this.tickCount;
+		this.getNavigation().moveTo(target.x, target.y, target.z, speedModifier);
 	}
 
 	private PlayState movementPredicate(AnimationState<?> event) {

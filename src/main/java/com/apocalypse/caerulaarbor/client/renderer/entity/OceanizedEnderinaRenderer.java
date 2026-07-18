@@ -3,7 +3,7 @@ package com.apocalypse.caerulaarbor.client.renderer.entity;
 
 import com.apocalypse.caerulaarbor.client.model.entity.OceanizedEnderinaModel;
 import com.apocalypse.caerulaarbor.client.model.entity.layer.OceanizedEnderinaLayer;
-import com.apocalypse.caerulaarbor.entity.OceanizedEnderinaEntity;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderinaEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;

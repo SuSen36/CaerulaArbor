@@ -8,6 +8,8 @@ import com.apocalypse.caerulaarbor.client.model.entity.*;
 import com.apocalypse.caerulaarbor.client.renderer.entity.*;
 import com.apocalypse.caerulaarbor.entity.*;
 import com.apocalypse.caerulaarbor.entity.bullets.*;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderinaEntity;
+import com.apocalypse.caerulaarbor.entity.enderdragon.OceanizedEnderDragonEntity;
 import com.apocalypse.caerulaarbor.entity.helper.Al1SHelperEntity;
 import com.apocalypse.caerulaarbor.entity.helper.LittleHelperEntity;
 import com.apocalypse.caerulaarbor.entity.routeshaper.LineringPathshaperEntity;
@@ -508,6 +510,10 @@ public class CAEntities {
 			EntityType.Builder.<OceanizedShulkerEntity>of(OceanizedShulkerEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(9).setUpdateInterval(3).setCustomClientFactory((spawnEntity, level) -> new OceanizedShulkerEntity(level))
 
 					.sized(1f, 1f));
+	public static final RegistryObject<EntityType<OceanizedEnderDragonEntity>> OCEANIZED_ENDER_DRAGON = register("oceanized_ender_dragon",
+			EntityType.Builder.<OceanizedEnderDragonEntity>of(OceanizedEnderDragonEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(10).setUpdateInterval(1).setCustomClientFactory((spawnEntity, level) -> new OceanizedEnderDragonEntity(level))
+
+					.sized(16.0f, 8.0f).fireImmune().clientTrackingRange(10));
 
 	// 自定义实体用户代码块开始
 	// 自定义实体用户代码块结束
@@ -684,6 +690,7 @@ public class CAEntities {
 		event.put(OCEANIZED_CHICKEN.get(), OceanizedChickenEntity.createAttributes().build());
 		event.put(NETHERSEA_SLIME.get(), NetherseaSlimeEntity.createAttributes().build());
 		event.put(OCEANIZED_SHULKER.get(), OceanizedShulkerEntity.createAttributes().build());
+		event.put(OCEANIZED_ENDER_DRAGON.get(), OceanizedEnderDragonEntity.createAttributes().build());
 	}
 
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -822,6 +829,7 @@ public class CAEntities {
 			event.registerEntityRenderer(CAEntities.OCEANIZED_CHICKEN.get(), OceanizedChickenRenderer::new);
 			event.registerEntityRenderer(CAEntities.NETHERSEA_SLIME.get(), NetherseaSlimeRenderer::new);
 			event.registerEntityRenderer(CAEntities.OCEANIZED_SHULKER.get(), OceanizedShulkerRenderer::new);
+			event.registerEntityRenderer(CAEntities.OCEANIZED_ENDER_DRAGON.get(), OceanizedEnderDragonRenderer::new);
 		}
 	}
 

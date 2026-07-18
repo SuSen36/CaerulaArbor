@@ -9,12 +9,15 @@ import com.apocalypse.caerulaarbor.init.CASounds;
 import com.apocalypse.caerulaarbor.util.WorldUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,6 +25,8 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -37,6 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
@@ -44,9 +50,12 @@ import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 
+import javax.annotation.Nullable;
+
 public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacker {
 	public static final EntityDataAccessor<Boolean> DATA_SHOOT = SynchedEntityData.defineId(CreeperFishEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final EntityDataAccessor<String> DATA_ANIMATION = SynchedEntityData.defineId(CreeperFishEntity.class, EntityDataSerializers.STRING);
+        public static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(CreeperFishEntity.class, EntityDataSerializers.INT);
 	public static final EntityDataAccessor<Integer> DATA_DEAL = SynchedEntityData.defineId(CreeperFishEntity.class, EntityDataSerializers.INT);
 	private boolean swinging;
 	private long lastSwing;
@@ -68,6 +77,7 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 		super.defineSynchedData();
 		this.entityData.define(DATA_SHOOT, false);
 		this.entityData.define(DATA_ANIMATION, "undefined");
+                this.entityData.define(DATA_VARIANT, Variant.DEFAULT.getId());
 		this.entityData.define(DATA_DEAL, 0);
 	}
 
@@ -88,7 +98,7 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 	}
 
 	@Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHitIn) {
+	protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHitIn) {
 		super.dropCustomDeathLoot(source, looting, recentlyHitIn);
 		this.spawnAtLocation(new ItemStack(CAItems.OCEAN_CRYSTAL.get()));
 	}
@@ -126,16 +136,35 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 	}
 
 	@Override
+	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData livingdata, @Nullable CompoundTag tag) {
+		SpawnGroupData spawnData = super.finalizeSpawn(world, difficulty, reason, livingdata, tag);
+		if (this.getVariant() == Variant.DEFAULT) {
+			if (world.getRandom().nextInt(3) == 0) {
+				this.setVariant(Variant.CRAWLER);
+			}
+		}
+		return spawnData;
+	}
+
+	@Override
 	public void addAdditionalSaveData(CompoundTag compound) {
 		super.addAdditionalSaveData(compound);
+                compound.putString("Variant", this.getVariant().getSerializedName());
 		compound.putInt("Deal", this.entityData.get(DATA_DEAL));
 	}
 
 	@Override
 	public void readAdditionalSaveData(CompoundTag compound) {
 		super.readAdditionalSaveData(compound);
+		if (compound.contains("Variant")) {
+			if (compound.contains("Variant", Tag.TAG_STRING)) {
+				this.setVariant(Variant.byName(compound.getString("Variant")));
+			} else {
+				this.setVariant(Variant.byId(compound.getInt("Variant")));
+			}
+		}
 		if (compound.contains("Deal")) {
-		    this.entityData.set(DATA_DEAL, compound.getInt("Deal"));
+			this.entityData.set(DATA_DEAL, compound.getInt("Deal"));
 		}
 	}
 
@@ -148,36 +177,34 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 		double z = this.getZ();
 		CreeperFishEntity entity = this;
 		Level world = this.level();
-        if (itemstack.getItem() == Items.FLINT_AND_STEEL) {
-            if ((LevelAccessor) world instanceof Level level) {
-                    level.playSound(null, BlockPos.containing(x, y, z), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 2, 1);
-            }
-            if (entity instanceof CreeperFishEntity) {
-                entity.setAnimation("animation.explosivefish.jump");
-            }
-            new Object() {
-                void timedLoop(int timedloopiterator, int timedlooptotal, int ticks) {
-                    CreeperFishEntity.this.performRangedSanityAttack();
-                    final int tick2 = ticks;
-                    CaerulaArborMod.queueServerWork(tick2, () -> {
-                        if (timedlooptotal > timedloopiterator + 1) {
-                            timedLoop(timedloopiterator + 1, timedlooptotal, tick2);
-                        }
-                    });
-                }
-            }.timedLoop(0, 5, 4);
-            return InteractionResult.SUCCESS;
-        }
-        return InteractionResult.PASS;
-    }
+		if (itemstack.getItem() == Items.FLINT_AND_STEEL) {
+			if ((LevelAccessor) world instanceof Level level) {
+				level.playSound(null, BlockPos.containing(x, y, z), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 2, 1);
+			}
+			if (entity instanceof CreeperFishEntity) {
+				entity.setAnimation("animation.explosivefish.jump");
+			}
+			new Object() {
+				void timedLoop(int timedloopiterator, int timedlooptotal, int ticks) {
+					CreeperFishEntity.this.performRangedSanityAttack();
+					final int tick2 = ticks;
+					CaerulaArborMod.queueServerWork(tick2, () -> {
+						if (timedlooptotal > timedloopiterator + 1) {
+							timedLoop(timedloopiterator + 1, timedlooptotal, tick2);
+						}
+					});
+				}
+			}.timedLoop(0, 5, 4);
+			return InteractionResult.SUCCESS;
+		}
+		return InteractionResult.PASS;
+	}
 
 	@Override
 	public void baseTick() {
 		super.baseTick();
 		this.refreshDimensions();
 	}
-
-	
 
 	public static void registerSpawnPlacements() {
 		SpawnPlacements.register(CAEntities.CREEPER_FISH.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (entityType, world, reason, pos, random) -> {
@@ -225,7 +252,7 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 	}
 
 	private PlayState attackingPredicate(AnimationState<?> event) {
-        if (getAttackAnim(event.getPartialTick()) > 0f && !this.swinging) {
+		if (getAttackAnim(event.getPartialTick()) > 0f && !this.swinging) {
 			this.swinging = true;
 			this.lastSwing = level().getGameTime();
 		}
@@ -271,6 +298,14 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 		return this.entityData.get(DATA_ANIMATION);
 	}
 
+	public Variant getVariant() {
+		return Variant.byId(this.entityData.get(DATA_VARIANT));
+	}
+
+	public void setVariant(Variant variant) {
+		this.entityData.set(DATA_VARIANT, variant.getId());
+	}
+
 	public void setAnimation(String animation) {
 		this.entityData.set(DATA_ANIMATION, animation);
 	}
@@ -282,10 +317,48 @@ public class CreeperFishEntity extends SeaMonster implements RangedSanityAttacke
 		data.add(new AnimationController<>(this, "procedure", 0, this::procedurePredicate));
 	}
 
-
 	@Override
 	public void setAnimationProcedure(String animation) {
 		this.animationprocedure = animation;
+	}
+
+	public enum Variant implements StringRepresentable {
+		DEFAULT(0, "default"),
+		CRAWLER(1, "crawler");
+
+		private static final Variant[] VALUES = values();
+		private final int id;
+		private final String serializedName;
+
+		Variant(int id, String serializedName) {
+			this.id = id;
+			this.serializedName = serializedName;
+		}
+
+		public int getId() {
+			return this.id;
+		}
+
+		public static Variant byId(int id) {
+			if (id < 0 || id >= VALUES.length) {
+				return DEFAULT;
+			}
+			return VALUES[id];
+		}
+
+		public static Variant byName(String name) {
+			for (Variant variant : VALUES) {
+				if (variant.serializedName.equals(name)) {
+					return variant;
+				}
+			}
+			return DEFAULT;
+		}
+
+		@Override
+		public String getSerializedName() {
+			return this.serializedName;
+		}
 	}
 }
 

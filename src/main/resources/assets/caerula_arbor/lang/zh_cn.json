@@ -2194,4 +2194,6 @@
   "item.caerula_arbor.apocata_sword": "§c哈基玖之剑",
   "item.caerula_arbor.archfiends_bed.description_0": "§b目标生命达到上限时，玩家盔甲值+3，盔甲韧性+2",
   "item.caerula_arbor.kings_armour.description_0": "§b护盾+3，将剩余目标生命值转化为护盾，每杀死一个生物有8%的概率目标生命值-1，护盾值+1"
+  ,
+  "item.caerula_arbor.oceanized_ender_dragon_spawner": "海嗣末影龙刷怪蛋"
 }

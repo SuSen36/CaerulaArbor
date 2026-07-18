@@ -13,7 +13,8 @@ import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 public class CreeperFishLayer extends GeoRenderLayer<CreeperFishEntity> {
-	private static final ResourceLocation LAYER = new ResourceLocation(CaerulaArborMod.MODID, "textures/entities/creeperlit.png");
+     private static final ResourceLocation DEFAULT_LAYER = new ResourceLocation(CaerulaArborMod.MODID, "textures/entities/creeperlit.png");
+	 private static final ResourceLocation CRAWLER_LAYER = new ResourceLocation(CaerulaArborMod.MODID, "textures/entities/crawlerlit.png");
 
 	public CreeperFishLayer(GeoRenderer<CreeperFishEntity> entityRenderer) {
 		super(entityRenderer);
@@ -21,7 +22,8 @@ public class CreeperFishLayer extends GeoRenderLayer<CreeperFishEntity> {
 
 	@Override
 	public void render(PoseStack poseStack, CreeperFishEntity animatable, BakedGeoModel bakedModel, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-		RenderType glowRenderType = RenderType.eyes(LAYER);
+		ResourceLocation layerTexture = animatable.getVariant() == CreeperFishEntity.Variant.CRAWLER ? CRAWLER_LAYER : DEFAULT_LAYER;
+		RenderType glowRenderType = RenderType.eyes(layerTexture);
 		getRenderer().reRender(getDefaultBakedModel(animatable), poseStack, bufferSource, animatable, glowRenderType, bufferSource.getBuffer(glowRenderType), partialTick, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
 	}
 }
